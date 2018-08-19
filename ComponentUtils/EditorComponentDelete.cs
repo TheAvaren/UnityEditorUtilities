@@ -3,61 +3,60 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-//Created by Christopher Lovell,
-//Only allows a certain amount of components of the same type on a GameObject
-//Limitations:You must be able to edit the component and have this:
-/*
-private void Reset()
-{
-    EditorComponentQueueDelete.Reset<T>(gameObject, this);
-}
-*/
-
-public static class EditorComponentQueueDelete {
+public static class EditorComponentDelete {
 
     static Queue<Component> markForDelete = new Queue<Component>();
 
     public static int queuedAmount { get { return markForDelete.Count; } }
 
-    static UnityEditorComponentManager()
-    {
 #if UNITY_EDITOR
+    static EditorComponentDelete()
+    {
         //Raised when an object or group of objects in the hierarchy changes.
-        EditorApplication.hierarchyChanged += () => { OnHierarchyChanged(); };
-#endif
+        EditorApplication.hierarchyChanged += OnHierarchyChanged;
     }
+#endif
 
     private static void MarkForDeletetion(Component c)
     {
-#if UNITY_EDITOR
         markForDelete.Enqueue(c);
-#else
-        Debug.Log("Cannot Queue:" + c.name + " Because we are not in the editor!");
-#endif
     }
 
-#if UNITY_EDITOR
+
     //Only exists in editor runtime
     private static void OnHierarchyChanged()
     {
+        if (markForDelete.Count <= 0)
+            return;
+
         int DequeueAmount = queuedAmount;
         for (int i = 0; i < DequeueAmount; i++)
         {
             UnityEngine.Object.DestroyImmediate(markForDelete.Dequeue());
         }
     }
-#endif
 
     /// <summary>
     /// Enqueue 'c' for deletetion if 'gameObject' has more than one 'T' attached -- EDITOR ONLY
     /// </summary>
-    public static void ResetCheck<T>(GameObject gameObject, Component c, int maxAmount = 2)
+    public static void ResetCheck<T>(GameObject gameObject, Component c, int maxIntances = 2)
     {
         Type t = typeof(T);
-        if (gameObject.GetComponents<T>().Length >= maxAmount)
+        if (gameObject.GetComponents<T>().Length >= maxIntances)
         {
-            Debug.LogError("Can't add Component to GameObject because there is already a script that implements " + t.FullName);
-            EditorComponentQueueDelete.MarkForDeletetion(c);
+            Debug.LogError("Cannot add \"Componentable:\" " + t.FullName + " to GameObject because it already exist on " + gameObject.name);
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying == true)
+            {
+#endif
+            UnityEngine.Object.DestroyImmediate(c);
+#if UNITY_EDITOR
+            }
+            else
+            {
+                EditorComponentDelete.MarkForDeletetion(c);
+            }
+#endif
         }
     }
 }
