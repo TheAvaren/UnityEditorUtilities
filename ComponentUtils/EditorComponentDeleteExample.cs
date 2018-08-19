@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-
+//Created by Christopher Lovell,
 public class EditorComponentQueueDeleteExample : MonoBehaviour, IInterfaceName
 
     // Use this for initialization
