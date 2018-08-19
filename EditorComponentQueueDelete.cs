@@ -3,6 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+//Created by Christopher Lovell,
+//Only allows a certain amount of components of the same type on a GameObject
+//Limitations:You must be able to edit the component and have this:
+/*
+private void Reset()
+{
+    EditorComponentQueueDelete.Reset<T>(gameObject, this);
+}
+*/
+
 public static class EditorComponentQueueDelete {
 
     static Queue<Component> markForDelete = new Queue<Component>();
